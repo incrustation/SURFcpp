@@ -24,6 +24,7 @@ extern "C" {
  * Signature: (JJ)I
  */
 int toGray(Mat img, Mat& gray);
+bool response_comparator(const DMatch& p1, const DMatch& p2);
 
 JNIEXPORT jint JNICALL Java_com_example_think_surfcpp_OpencvNative_convertGray
   (JNIEnv *, jclass, jlong, jlong);

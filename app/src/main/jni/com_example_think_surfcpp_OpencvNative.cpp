@@ -8,6 +8,9 @@ FlannBasedMatcher matcher;
 vector< DMatch > matches, good_matches;
 vector<Point2f> tag_corners(4), scene_corners(4);
 
+bool response_comparator(const DMatch& p1, const DMatch& p2) {
+        return p1.distance < p2.distance;
+}
 
 int toGray(Mat img, Mat& gray){
     //convert to gray scale
@@ -42,7 +45,9 @@ int toGray(Mat img, Mat& gray){
     */
 
     //sort matches by distance
-    int limit = (matches.size()>100)? 100:matches.size();
+
+    std::sort(matches.begin(), matches.end(), response_comparator);
+    int limit = (matches.size()>200)? 200:matches.size();
     good_matches = matches;
     vector< Point2f > tag, scene;
     vector< KeyPoint > kpts_good;
