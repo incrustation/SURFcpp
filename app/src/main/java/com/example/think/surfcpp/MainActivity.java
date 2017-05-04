@@ -24,7 +24,7 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     private static String TAG = "MainActivity";
     JavaCameraView javaCameraView;
 
-    Mat mRGBA, mGray, tag;
+    Mat mRGBA, mGray, tag1, tag2, tag3, tag4, tag5;
 
     static{
         Log.i("Sys library loading", "This should call the onLoad function");
@@ -93,12 +93,29 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
     public void onCameraViewStarted(int width, int height) {
         mRGBA = new Mat(height, width, CvType.CV_8UC4);
         mGray = new Mat(height, width, CvType.CV_8UC1);
-        tag = new Mat(height, width, CvType.CV_8UC4);
+        tag1 = new Mat(height, width, CvType.CV_8UC4);
+        tag2 = new Mat(height, width, CvType.CV_8UC4);
+        tag3 = new Mat(height, width, CvType.CV_8UC4);
+        tag4 = new Mat(height, width, CvType.CV_8UC4);
+        tag5 = new Mat(height, width, CvType.CV_8UC4);
 
         //trying to obtain the tag image from Drawable
-        Bitmap tag_dummy = BitmapFactory.decodeResource(getResources(), R.mipmap.circ_bar);
-        Utils.bitmapToMat(tag_dummy, tag);
-        OpencvNative.findtag(tag.getNativeObjAddr());
+        Bitmap tag_dummy1 = BitmapFactory.decodeResource(getResources(), R.mipmap.circ_bar);
+        Utils.bitmapToMat(tag_dummy1, tag1);
+        Bitmap tag_dummy2 = BitmapFactory.decodeResource(getResources(), R.mipmap.circ_bar2);
+        Utils.bitmapToMat(tag_dummy2, tag2);
+        Bitmap tag_dummy3 = BitmapFactory.decodeResource(getResources(), R.mipmap.circ_bar3);
+        Utils.bitmapToMat(tag_dummy3, tag3);
+        Bitmap tag_dummy4 = BitmapFactory.decodeResource(getResources(), R.mipmap.circ_bar4);
+        Utils.bitmapToMat(tag_dummy4, tag4);
+        Bitmap tag_dummy5 = BitmapFactory.decodeResource(getResources(), R.mipmap.circ_bar5);
+        Utils.bitmapToMat(tag_dummy5, tag5);
+
+        OpencvNative.findtag(tag1.getNativeObjAddr(), 0);
+        OpencvNative.findtag(tag2.getNativeObjAddr(), 1);
+        OpencvNative.findtag(tag3.getNativeObjAddr(), 2);
+        OpencvNative.findtag(tag4.getNativeObjAddr(), 3);
+        OpencvNative.findtag(tag5.getNativeObjAddr(), 4);
     }
 
     @Override

@@ -30,7 +30,7 @@ JNIEXPORT jint JNICALL Java_com_example_think_surfcpp_OpencvNative_convertGray
   (JNIEnv *, jclass, jlong, jlong);
 
 JNIEXPORT jint JNICALL Java_com_example_think_surfcpp_OpencvNative_findtag
-  (JNIEnv *, jclass, jlong);
+  (JNIEnv *, jclass, jlong, jint);
 
 #ifdef __cplusplus
 }
