@@ -4,6 +4,7 @@ vector<KeyPoint> kpts_tag, kpts_tag1, kpts_tag2, kpts_tag3, kpts_tag4, kpts_tag5
 Mat desc_tag;
 Mat desc_scene, img_tag, img_matches;
 vector<Mat> desc_tags(5);
+vector <double> match_size(5);
 int minHessian = 400;
 Ptr<SURF> surf = SURF::create(minHessian);
 FlannBasedMatcher matcher;
@@ -20,10 +21,15 @@ int toGray(Mat img, Mat& gray){
     cvtColor(img, gray, CV_RGBA2GRAY);
     //get keypoints and matches
     surf->detectAndCompute(gray, noArray(), kpts_scene, desc_scene);
+    Mat black_screen = Mat::zeros(gray.rows,gray.cols,gray.type());
+    drawKeypoints(black_screen, kpts_scene, black_screen, 255, 0);
+    if(desc_scene.empty()){
+            return 0;
+        }
     if(desc_scene.type()!=CV_32F) {
             desc_scene.convertTo(desc_tag, CV_32F);
-        }
-    drawKeypoints(gray, kpts_scene, gray, 255, 0);
+    }
+
     matcher.match(desc_tags[0], desc_scene, matches1);
     matcher.match(desc_tags[1], desc_scene, matches2);
     matcher.match(desc_tags[2], desc_scene, matches3);
@@ -31,7 +37,7 @@ int toGray(Mat img, Mat& gray){
     matcher.match(desc_tags[4], desc_scene, matches5);
     if (matches1.size() == 0 ||matches2.size() == 0||matches3.size() == 0||matches4.size() == 0
         ||matches5.size() == 0){
-        gray = img;
+        gray = black_screen;
         return 0;
     }
     //find good matches
@@ -45,16 +51,24 @@ int toGray(Mat img, Mat& gray){
     std::sort(matches3.begin(), matches3.end(), response_comparator);
     std::sort(matches4.begin(), matches4.end(), response_comparator);
     std::sort(matches5.begin(), matches5.end(), response_comparator);
-    int limit1 = (matches1.size()>100)? 100:matches1.size();
-    int limit2 = (matches2.size()>100)? 100:matches2.size();
-    int limit3 = (matches3.size()>100)? 100:matches3.size();
-    int limit4 = (matches4.size()>100)? 100:matches4.size();
-    int limit5 = (matches5.size()>100)? 100:matches5.size();
+
+
+    int limit1 = (matches1.size()>60)? 60:matches1.size();
+    int limit2 = (matches2.size()>60)? 60:matches2.size();
+    int limit3 = (matches3.size()>60)? 60:matches3.size();
+    int limit4 = (matches4.size()>60)? 60:matches4.size();
+    int limit5 = (matches5.size()>60)? 60:matches5.size();
     good_matches1 = matches1;
     good_matches2 = matches2;
     good_matches3 = matches3;
     good_matches4 = matches4;
     good_matches5 = matches5;
+    match_size[0] = good_matches1[limit1-1].distance;
+    match_size[1] = good_matches2[limit2-1].distance;
+    match_size[2] = good_matches3[limit3-1].distance;
+    match_size[3] = good_matches4[limit4-1].distance;
+    match_size[4] = good_matches5[limit5-1].distance;
+    std::sort(match_size.begin(), match_size.end());
     vector< Point2f > tag1, tag2, tag3, tag4, tag5, scene1, scene2, scene3, scene4, scene5;
     for( int i = 0; i < good_matches1.size(); i++ ){
         //-- Get the keypoints from the good matches
@@ -82,7 +96,7 @@ int toGray(Mat img, Mat& gray){
         scene5.push_back( kpts_scene[ good_matches5[i].trainIdx ].pt );
     }
     if (tag1.size() == 0||tag2.size()==0||tag3.size()==0||tag4.size()==0||tag5.size()==0) {
-        gray = img;
+        gray = black_screen;
         return 0;
     }
 
@@ -91,47 +105,56 @@ int toGray(Mat img, Mat& gray){
     Mat H3 = findHomography( tag3, scene3, CV_RANSAC );
     Mat H4 = findHomography( tag4, scene4, CV_RANSAC );
     Mat H5 = findHomography( tag5, scene5, CV_RANSAC );
-    
+
+
     if (!H1.empty()){
         perspectiveTransform( tag_corners, scene_corners1, H1);
-        line( gray, scene_corners1[0], scene_corners1[1], Scalar(255, 255, 0), 4 );
-        line( gray, scene_corners1[1], scene_corners1[2], Scalar(255, 255, 0), 4 );
-        line( gray, scene_corners1[2], scene_corners1[3], Scalar(255, 255, 0), 4 );
-        line( gray, scene_corners1[3], scene_corners1[0], Scalar(255, 255, 0), 4 );
+        line( black_screen, scene_corners1[0], scene_corners1[1], Scalar(255, 255, 0), 4 );
+        line( black_screen, scene_corners1[1], scene_corners1[2], Scalar(255, 255, 0), 4 );
+        line( black_screen, scene_corners1[2], scene_corners1[3], Scalar(255, 255, 0), 4 );
+        line( black_screen, scene_corners1[3], scene_corners1[0], Scalar(255, 255, 0), 4 );
     }
 
     if (!H2.empty()){
         perspectiveTransform( tag_corners, scene_corners2, H2);
-        line( gray, scene_corners2[0], scene_corners2[1], Scalar(0, 255, 0), 4 );
-        line( gray, scene_corners2[1], scene_corners2[2], Scalar(0, 255, 0), 4 );
-        line( gray, scene_corners2[2], scene_corners2[3], Scalar(0, 255, 0), 4 );
-        line( gray, scene_corners2[3], scene_corners2[0], Scalar(0, 255, 0), 4 );
+        line( black_screen, scene_corners2[0], scene_corners2[1], Scalar(0, 255, 0), 4 );
+        line( black_screen, scene_corners2[1], scene_corners2[2], Scalar(0, 255, 0), 4 );
+        line( black_screen, scene_corners2[2], scene_corners2[3], Scalar(0, 255, 0), 4 );
+        line( black_screen, scene_corners2[3], scene_corners2[0], Scalar(0, 255, 0), 4 );
     }
 
     if (!H3.empty()){
         perspectiveTransform( tag_corners, scene_corners3, H3);
-        line( gray, scene_corners3[0], scene_corners3[1], Scalar(255, 0, 0), 4 );
-        line( gray, scene_corners3[1], scene_corners3[2], Scalar(255, 0, 0), 4 );
-        line( gray, scene_corners3[2], scene_corners3[3], Scalar(255, 0, 0), 4 );
-        line( gray, scene_corners3[3], scene_corners3[0], Scalar(255, 0, 0), 4 );
+        line( black_screen, scene_corners3[0], scene_corners3[1], Scalar(255, 0, 0), 4 );
+        line( black_screen, scene_corners3[1], scene_corners3[2], Scalar(255, 0, 0), 4 );
+        line( black_screen, scene_corners3[2], scene_corners3[3], Scalar(255, 0, 0), 4 );
+        line( black_screen, scene_corners3[3], scene_corners3[0], Scalar(255, 0, 0), 4 );
     }
 
     if (!H4.empty()){
         perspectiveTransform( tag_corners, scene_corners4, H4);
-        line( gray, scene_corners4[0], scene_corners4[1], Scalar(0, 0, 255), 4 );
-        line( gray, scene_corners4[1], scene_corners4[2], Scalar(0, 0, 255), 4 );
-        line( gray, scene_corners4[2], scene_corners4[3], Scalar(0, 0, 255), 4 );
-        line( gray, scene_corners4[3], scene_corners4[0], Scalar(0, 0, 255), 4 );
+        line( black_screen, scene_corners4[0], scene_corners4[1], Scalar(0, 0, 255), 4 );
+        line( black_screen, scene_corners4[1], scene_corners4[2], Scalar(0, 0, 255), 4 );
+        line( black_screen, scene_corners4[2], scene_corners4[3], Scalar(0, 0, 255), 4 );
+        line( black_screen, scene_corners4[3], scene_corners4[0], Scalar(0, 0, 255), 4 );
     }
 
     if (!H5.empty()){
         perspectiveTransform( tag_corners, scene_corners5, H5);
-        line( gray, scene_corners5[0], scene_corners5[1], Scalar(0, 255, 255), 4 );
-        line( gray, scene_corners5[1], scene_corners5[2], Scalar(0, 255, 255), 4 );
-        line( gray, scene_corners5[2], scene_corners5[3], Scalar(0, 255, 255), 4 );
-        line( gray, scene_corners5[3], scene_corners5[0], Scalar(0, 255, 255), 4 );
+        line( black_screen, scene_corners5[0], scene_corners5[1], Scalar(0, 255, 255), 4 );
+        line( black_screen, scene_corners5[1], scene_corners5[2], Scalar(0, 255, 255), 4 );
+        line( black_screen, scene_corners5[2], scene_corners5[3], Scalar(0, 255, 255), 4 );
+        line( black_screen, scene_corners5[3], scene_corners5[0], Scalar(0, 255, 255), 4 );
     }
-
+    gray = black_screen;
+    Mat trans_mat = Mat(2,3,CV_32F);
+       trans_mat.at<float>(0,0) = 1;
+       trans_mat.at<float>(0,1) = 0;
+       trans_mat.at<float>(0,2) = 50;
+       trans_mat.at<float>(1,0) = 0;
+       trans_mat.at<float>(1,1) = 1;
+       trans_mat.at<float>(1,2) = 0;
+       warpAffine(black_screen,black_screen,trans_mat,black_screen.size());
     if( !img.data || !gray.data ){
         std::cout<< " --(!) Error reading images " << std::endl;
         return -1;
@@ -148,6 +171,9 @@ int gettag(Mat img, int index){
     tag_corners[2] = cvPoint( img.cols, img.rows );
     tag_corners[3] = cvPoint( 0, img.rows );
     surf->detectAndCompute(img, noArray(), kpts_tag, desc_tag);
+    if(desc_tag.type()!=CV_32F) {
+            desc_tag.convertTo(desc_tag, CV_32F);
+    }
     desc_tags[index] = desc_tag;
     switch(index){
         case 0:
@@ -169,9 +195,7 @@ int gettag(Mat img, int index){
         std::cout<< " --(!) Error filing kpts_tag " << std::endl;
         break;
     }
-    if(desc_tag.type()!=CV_32F) {
-        desc_tag.convertTo(desc_tag, CV_32F);
-    }
+
     if(!img.data){
         std::cout<< " --(!) Error reading images " << std::endl;
         return -1;

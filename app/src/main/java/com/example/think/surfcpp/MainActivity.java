@@ -100,15 +100,15 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         tag5 = new Mat(height, width, CvType.CV_8UC4);
 
         //trying to obtain the tag image from Drawable
-        Bitmap tag_dummy1 = BitmapFactory.decodeResource(getResources(), R.mipmap.circ_bar);
+        Bitmap tag_dummy1 = BitmapFactory.decodeResource(getResources(), R.mipmap.cat2);//Yellow
         Utils.bitmapToMat(tag_dummy1, tag1);
-        Bitmap tag_dummy2 = BitmapFactory.decodeResource(getResources(), R.mipmap.circ_bar2);
+        Bitmap tag_dummy2 = BitmapFactory.decodeResource(getResources(), R.mipmap.cat3);//green
         Utils.bitmapToMat(tag_dummy2, tag2);
-        Bitmap tag_dummy3 = BitmapFactory.decodeResource(getResources(), R.mipmap.circ_bar3);
+        Bitmap tag_dummy3 = BitmapFactory.decodeResource(getResources(), R.mipmap.cat4); //red
         Utils.bitmapToMat(tag_dummy3, tag3);
-        Bitmap tag_dummy4 = BitmapFactory.decodeResource(getResources(), R.mipmap.circ_bar4);
+        Bitmap tag_dummy4 = BitmapFactory.decodeResource(getResources(), R.mipmap.meme1); //deep blue
         Utils.bitmapToMat(tag_dummy4, tag4);
-        Bitmap tag_dummy5 = BitmapFactory.decodeResource(getResources(), R.mipmap.circ_bar5);
+        Bitmap tag_dummy5 = BitmapFactory.decodeResource(getResources(), R.mipmap.circ_bar5); //light blue
         Utils.bitmapToMat(tag_dummy5, tag5);
 
         OpencvNative.findtag(tag1.getNativeObjAddr(), 0);
