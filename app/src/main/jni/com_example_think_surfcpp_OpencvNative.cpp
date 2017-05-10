@@ -34,7 +34,6 @@ Scalar colors[] = { // BGR color scheme
     Scalar(0, 255, 255)
 };
 
-int s = 32;
 
 vector<KeyPoint> kpts_tag, kpts_scene;
 vector < vector< KeyPoint > > kpts_tags(5);
@@ -45,6 +44,7 @@ vector <double> match_size(5);
 
 vector<Mat> hyperplane(5);
 Mat filter1, filter2, filter3, svm_mean;
+int training_img_size = 32;
 
 int minHessian = 400;
 Ptr<SURF> surf = SURF::create(minHessian);
@@ -84,45 +84,34 @@ int run_all_tests(Mat MatImage, Rect bounding_rect) {
         }
         __android_log_print(ANDROID_LOG_DEBUG, "LOG_TAG", "\nBest Match is %d with value %f \n", bestMatchNumber, bestMatchValue);
         return bestMatchNumber;
-    } 
+    }
     return -1;
 }
 
 double individualTest(Mat MatImage, int c) {
     MatImage.convertTo(MatImage, CV_64FC1); // change of type to accommodate matrix multiplication
     MatImage = MatImage/255; // scaling
-    Mat img2 = Mat(s,s,CV_64FC1);
+    Mat img2 = Mat(training_img_size,training_img_size,CV_64FC1);
     resize(MatImage,img2,img2.size(),0,0,INTER_CUBIC); // resize image
 
-    Mat test = Mat(1,3*s*s,CV_64FC1);
-
     // now need to filter each
-    Mat F1 = Mat(s,s,CV_64FC1);
-    Mat F2 = Mat(s,s,CV_64FC1);
-    Mat F3 = Mat(s,s,CV_64FC1);
-    flip(filter1,filter1,-1);
-    flip(filter2,filter2,-1);
-    flip(filter3,filter3,-1);
+    Mat F1 = Mat(training_img_size,training_img_size,CV_64FC1);
+    Mat F2 = Mat(training_img_size,training_img_size,CV_64FC1);
+    Mat F3 = Mat(training_img_size,training_img_size,CV_64FC1);
     // run convolutions
     filter2D(img2,F1,-1,filter1);
     filter2D(img2,F2,-1,filter2);
     filter2D(img2,F3,-1,filter3);
 
+    Mat test = Mat(3,training_img_size*training_img_size,CV_64FC1);
     // concatenate into one long vector
-    for (int i = 0; i < 3; i++){
-        for (int j = 0; j < s; j++){
-            for (int k = 0; k < s; k++){
-                if (i == 0){
-                    test.at<double>(s*s*i+s*j + k) = F1.at<double>(j,k);
-                }
-                else if (i == 1){
-                    test.at<double>(s*s*i+s*j + k) = F2.at<double>(j,k);
-                } else {
-                    test.at<double>(s*s*i+s*j + k) = F3.at<double>(j,k);
-                }
-            }
-        }
-    }
+    F1 = F1.reshape(1,1);
+    F2 = F2.reshape(1,1);
+    F3 = F3.reshape(1,1);
+    F1.row(0).copyTo(test.row(0));
+    F2.row(0).copyTo(test.row(1));
+    F3.row(0).copyTo(test.row(2));
+    test = test.reshape(1,1);
 
     //normalize data
     subtract(test,svm_mean,test);
@@ -253,17 +242,20 @@ JNIEXPORT jint JNICALL Java_com_example_think_surfcpp_OpencvNative_findTag
 
 JNIEXPORT jint JNICALL Java_com_example_think_surfcpp_OpencvNative_initializeSVM
   (JNIEnv *, jclass){
-    hyperplane[0]  = Mat(1,3*s*s,CV_64FC1,svm1);
-    hyperplane[1]  = Mat(1,3*s*s,CV_64FC1,svm2);
-    hyperplane[2]  = Mat(1,3*s*s,CV_64FC1,svm3);
-    hyperplane[3]  = Mat(1,3*s*s,CV_64FC1,svm4);
-    hyperplane[4]  = Mat(1,3*s*s,CV_64FC1,svm5);
+    hyperplane[0]  = Mat(1,3*training_img_size*training_img_size,CV_64FC1,svm1);
+    hyperplane[1]  = Mat(1,3*training_img_size*training_img_size,CV_64FC1,svm2);
+    hyperplane[2]  = Mat(1,3*training_img_size*training_img_size,CV_64FC1,svm3);
+    hyperplane[3]  = Mat(1,3*training_img_size*training_img_size,CV_64FC1,svm4);
+    hyperplane[4]  = Mat(1,3*training_img_size*training_img_size,CV_64FC1,svm5);
 
     int filter_size = 5;
     filter1 = Mat(filter_size,filter_size,CV_64FC1,fil1);
     filter2 = Mat(filter_size,filter_size,CV_64FC1,fil2);
     filter3 = Mat(filter_size,filter_size,CV_64FC1,fil3);
-    svm_mean = Mat(1,3*s*s,CV_64FC1,svm_mean_arr);
+    svm_mean = Mat(1,3*training_img_size*training_img_size,CV_64FC1,svm_mean_arr);
+    flip(filter1,filter1,-1);
+    flip(filter2,filter2,-1);
+    flip(filter3,filter3,-1);
 
     return 0;
 }
