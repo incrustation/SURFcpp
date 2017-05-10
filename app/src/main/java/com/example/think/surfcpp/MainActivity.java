@@ -111,11 +111,12 @@ public class MainActivity extends AppCompatActivity implements CameraBridgeViewB
         Bitmap tag_dummy5 = BitmapFactory.decodeResource(getResources(), R.mipmap.circ_bar5); //light blue
         Utils.bitmapToMat(tag_dummy5, tag5);
 
-        OpencvNative.findtag(tag1.getNativeObjAddr(), 0);
-        OpencvNative.findtag(tag2.getNativeObjAddr(), 1);
-        OpencvNative.findtag(tag3.getNativeObjAddr(), 2);
-        OpencvNative.findtag(tag4.getNativeObjAddr(), 3);
-        OpencvNative.findtag(tag5.getNativeObjAddr(), 4);
+        OpencvNative.findTag(tag1.getNativeObjAddr(), 0);
+        OpencvNative.findTag(tag2.getNativeObjAddr(), 1);
+        OpencvNative.findTag(tag3.getNativeObjAddr(), 2);
+        OpencvNative.findTag(tag4.getNativeObjAddr(), 3);
+        OpencvNative.findTag(tag5.getNativeObjAddr(), 4);
+        OpencvNative.initializeSVM();
     }
 
     @Override

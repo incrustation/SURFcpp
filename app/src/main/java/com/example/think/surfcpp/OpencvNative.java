@@ -7,5 +7,6 @@ package com.example.think.surfcpp;
 public class OpencvNative {
 
     public native static int convertGray(long matAddrRgba, long matAddrGray);
-    public native static int findtag(long matAddrtag, int index);
+    public native static int findTag(long matAddrtag, int index);
+    public native static int initializeSVM();
 }
